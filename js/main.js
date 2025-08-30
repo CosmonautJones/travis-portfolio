@@ -736,6 +736,12 @@ document.addEventListener('DOMContentLoaded', () => {
         createCursorTrail();
         createThemeToggle();
         
+        // Initialize new collaborative features
+        const aiChat = new AIChat();
+        const codePlayground = new CodePlayground();
+        const skillsRadar = new SkillsRadar();
+        initCollaborativeFeatures();
+        
         // Add particle effects to buttons
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', createParticleEffect);
@@ -766,6 +772,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { threshold: 0.3 });
         
         skillsObserver.observe(skillsSection);
+        
+        // Initialize radar chart when playground section is visible
+        const playgroundSection = document.querySelector('.playground');
+        if (playgroundSection) {
+            const playgroundObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            skillsRadar.init();
+                            skillsRadar.animateRadar();
+                        }, 500);
+                        playgroundObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+            
+            playgroundObserver.observe(playgroundSection);
+        }
         
     }, 2600);
 });
@@ -846,6 +870,462 @@ function manageFocus() {
 
 // Initialize accessibility features
 document.addEventListener('DOMContentLoaded', manageFocus);
+
+// ================================
+// AI CHAT WIDGET
+// ================================
+
+class AIChat {
+    constructor() {
+        this.responses = {
+            greetings: [
+                "Hello! I'm here to tell you about Travis's amazing work! 👋",
+                "Hi there! Ready to learn about Travis's projects and skills? 🚀",
+                "Hey! I'm excited to share Travis's journey with you! ✨"
+            ],
+            skills: [
+                "Travis is proficient in React, Vue.js, Node.js, Python, and many more! He loves learning new technologies and staying current with industry trends. 💻",
+                "His strongest skills include full-stack development, cloud architecture, and team leadership. He's always expanding his toolkit! 🛠️",
+                "Travis excels at both frontend and backend development, with expertise in modern frameworks and cloud technologies. 🌟"
+            ],
+            projects: [
+                "Travis has built amazing projects like e-commerce platforms, analytics dashboards, and mobile apps! Each one showcases his attention to detail and user experience focus. 🎨",
+                "His projects demonstrate full-stack capabilities, from database design to beautiful UIs. Check out the Projects section for more details! 📱",
+                "Every project Travis builds focuses on performance, scalability, and user delight. He's passionate about creating meaningful digital experiences! 🚀"
+            ],
+            collaboration: [
+                "Travis thrives in team environments! He's experienced in pair programming, code reviews, and mentoring junior developers. 👥",
+                "He's led multiple cross-functional teams and believes great software is built through collaboration and shared knowledge. 🤝",
+                "Travis uses tools like Slack, GitHub, Figma, and Jira to keep teams connected and productive. Communication is key! 💬"
+            ],
+            experience: [
+                "Travis has 5+ years of professional experience, from frontend roles to senior full-stack positions. He's worked at both startups and established companies! 📈",
+                "He's built systems serving millions of users and has experience with microservices, CI/CD, and cloud infrastructure. 🏗️",
+                "Travis has mentored 10+ developers and led 3 different teams to successful project deliveries. Leadership comes naturally! 👑"
+            ],
+            default: [
+                "That's a great question! Travis is always excited to discuss new opportunities and challenges. Feel free to reach out directly! 😊",
+                "I'd love to help with that! You can contact Travis through the form below or connect on LinkedIn for more detailed conversations. 📞",
+                "Travis would be the best person to answer that! He's very approachable and loves talking about technology and collaboration. 💭"
+            ]
+        };
+        this.isOpen = false;
+        this.init();
+    }
+
+    init() {
+        const chatFab = document.getElementById('chatFab');
+        const chatWidget = document.getElementById('chatWidget');
+        const chatToggle = document.getElementById('chatToggle');
+        const chatSend = document.getElementById('chatSend');
+        const chatInput = document.getElementById('chatInput');
+
+        chatFab.addEventListener('click', () => this.toggleChat());
+        chatToggle.addEventListener('click', () => this.toggleChat());
+        chatSend.addEventListener('click', () => this.sendMessage());
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+    }
+
+    toggleChat() {
+        const chatWidget = document.getElementById('chatWidget');
+        const chatFab = document.getElementById('chatFab');
+        
+        this.isOpen = !this.isOpen;
+        
+        if (this.isOpen) {
+            chatWidget.classList.add('active');
+            chatFab.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+            }, 300);
+        } else {
+            chatWidget.classList.remove('active');
+            chatFab.style.transform = 'scale(1)';
+        }
+    }
+
+    sendMessage() {
+        const chatInput = document.getElementById('chatInput');
+        const message = chatInput.value.trim();
+        
+        if (!message) return;
+        
+        this.addMessage(message, 'user');
+        chatInput.value = '';
+        
+        // Show typing indicator
+        this.showTypingIndicator();
+        
+        setTimeout(() => {
+            this.hideTypingIndicator();
+            const response = this.generateResponse(message);
+            this.addMessage(response, 'bot');
+        }, Math.random() * 1000 + 1000);
+    }
+
+    addMessage(text, sender) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-${sender === 'user' ? 'user' : 'robot'}"></i>
+            </div>
+            <div class="message-content">${text}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    showTypingIndicator() {
+        const chatMessages = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot-message typing-indicator-msg';
+        typingDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    hideTypingIndicator() {
+        const typingIndicator = document.querySelector('.typing-indicator-msg');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    generateResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+            return this.getRandomResponse('greetings');
+        } else if (lowerMessage.includes('skill') || lowerMessage.includes('technology') || lowerMessage.includes('tech')) {
+            return this.getRandomResponse('skills');
+        } else if (lowerMessage.includes('project') || lowerMessage.includes('work') || lowerMessage.includes('portfolio')) {
+            return this.getRandomResponse('projects');
+        } else if (lowerMessage.includes('team') || lowerMessage.includes('collaboration') || lowerMessage.includes('work together')) {
+            return this.getRandomResponse('collaboration');
+        } else if (lowerMessage.includes('experience') || lowerMessage.includes('background') || lowerMessage.includes('career')) {
+            return this.getRandomResponse('experience');
+        } else {
+            return this.getRandomResponse('default');
+        }
+    }
+
+    getRandomResponse(category) {
+        const responses = this.responses[category];
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
+}
+
+// ================================
+// CODE PLAYGROUND
+// ================================
+
+class CodePlayground {
+    constructor() {
+        this.examples = {
+            fibonacci: {
+                output: '[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]',
+                description: '✨ Generated the first 10 Fibonacci numbers using a generator function!'
+            },
+            api: {
+                output: `{
+  "message": "Welcome Travis!",
+  "profile": {
+    "name": "Travis",
+    "role": "Senior Developer",
+    "skills": ["React", "Python", "AWS"]
+  }
+}`,
+                description: '🚀 API endpoint successfully created user profile!'
+            }
+        };
+        this.init();
+    }
+
+    init() {
+        document.querySelectorAll('.run-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.runExample(e.target.dataset.example));
+        });
+    }
+
+    runExample(exampleName) {
+        const outputElement = document.getElementById(`output-${exampleName}`);
+        const outputContent = outputElement.querySelector('.output-content');
+        const runBtn = document.querySelector(`[data-example="${exampleName}"]`);
+        
+        // Show loading state
+        runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running';
+        outputContent.textContent = 'Executing code...';
+        
+        setTimeout(() => {
+            const example = this.examples[exampleName];
+            outputContent.innerHTML = `
+                <div style="margin-bottom: 0.5rem; color: var(--success);">${example.description}</div>
+                <pre style="margin: 0; white-space: pre-wrap;">${example.output}</pre>
+            `;
+            runBtn.innerHTML = '<i class="fas fa-check"></i> Ran';
+            
+            // Add success animation
+            outputElement.style.animation = 'codeSuccess 0.5s ease-out';
+            
+            setTimeout(() => {
+                runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
+            }, 2000);
+        }, 1500);
+    }
+}
+
+// Add code success animation
+const codeSuccessStyle = document.createElement('style');
+codeSuccessStyle.textContent = `
+    @keyframes codeSuccess {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); box-shadow: 0 10px 30px rgba(57, 255, 122, 0.3); }
+        100% { transform: scale(1); }
+    }
+`;
+document.head.appendChild(codeSuccessStyle);
+
+// ================================
+// SKILLS RADAR CHART
+// ================================
+
+class SkillsRadar {
+    constructor() {
+        this.skills = [
+            { name: 'Frontend', current: 90, target: 95 },
+            { name: 'Backend', current: 85, target: 90 },
+            { name: 'DevOps', current: 75, target: 85 },
+            { name: 'Mobile', current: 70, target: 80 },
+            { name: 'AI/ML', current: 60, target: 75 },
+            { name: 'Leadership', current: 80, target: 90 }
+        ];
+        this.canvas = null;
+        this.ctx = null;
+    }
+
+    init() {
+        this.canvas = document.getElementById('skillsRadar');
+        if (!this.canvas) return;
+        
+        this.ctx = this.canvas.getContext('2d');
+        this.draw();
+    }
+
+    draw() {
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        const radius = 150;
+        const angles = this.skills.map((_, i) => (i * 2 * Math.PI) / this.skills.length);
+
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw grid
+        this.drawGrid(centerX, centerY, radius);
+        
+        // Draw skill areas
+        this.drawSkillArea(centerX, centerY, radius, angles, 'current', '#00D4FF');
+        this.drawSkillArea(centerX, centerY, radius, angles, 'target', '#FF6B9D');
+        
+        // Draw labels
+        this.drawLabels(centerX, centerY, radius, angles);
+    }
+
+    drawGrid(centerX, centerY, radius) {
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.lineWidth = 1;
+        
+        // Draw concentric circles
+        for (let i = 1; i <= 5; i++) {
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, (radius * i) / 5, 0, 2 * Math.PI);
+            this.ctx.stroke();
+        }
+        
+        // Draw radial lines
+        const angles = this.skills.map((_, i) => (i * 2 * Math.PI) / this.skills.length);
+        angles.forEach(angle => {
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, centerY);
+            this.ctx.lineTo(
+                centerX + radius * Math.cos(angle - Math.PI / 2),
+                centerY + radius * Math.sin(angle - Math.PI / 2)
+            );
+            this.ctx.stroke();
+        });
+    }
+
+    drawSkillArea(centerX, centerY, radius, angles, type, color) {
+        this.ctx.fillStyle = color.replace('#', 'rgba(').replace('FF', '255,').replace('D4', '212,').replace('6B', '107,').replace('9D', '157,') + ', 0.2)';
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2;
+        
+        this.ctx.beginPath();
+        this.skills.forEach((skill, i) => {
+            const value = skill[type] / 100;
+            const x = centerX + radius * value * Math.cos(angles[i] - Math.PI / 2);
+            const y = centerY + radius * value * Math.sin(angles[i] - Math.PI / 2);
+            
+            if (i === 0) {
+                this.ctx.moveTo(x, y);
+            } else {
+                this.ctx.lineTo(x, y);
+            }
+        });
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+    }
+
+    drawLabels(centerX, centerY, radius, angles) {
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = '14px Inter';
+        this.ctx.textAlign = 'center';
+        
+        this.skills.forEach((skill, i) => {
+            const labelRadius = radius + 30;
+            const x = centerX + labelRadius * Math.cos(angles[i] - Math.PI / 2);
+            const y = centerY + labelRadius * Math.sin(angles[i] - Math.PI / 2);
+            
+            this.ctx.fillText(skill.name, x, y);
+            this.ctx.fillText(`${skill.current}%`, x, y + 15);
+        });
+    }
+
+    animateRadar() {
+        // Add animation to make the radar more dynamic
+        let frame = 0;
+        const animate = () => {
+            this.draw();
+            
+            // Add rotating highlight
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            const highlightAngle = (frame * 2) % 360;
+            const x = centerX + 150 * Math.cos(highlightAngle * Math.PI / 180);
+            const y = centerY + 150 * Math.sin(highlightAngle * Math.PI / 180);
+            
+            this.ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            this.ctx.fill();
+            
+            frame++;
+            if (frame < 200) {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
+    }
+}
+
+// ================================
+// COLLABORATIVE FEATURES
+// ================================
+
+function initCollaborativeFeatures() {
+    // Add real-time collaboration simulation
+    const collabCards = document.querySelectorAll('.collab-card');
+    
+    collabCards.forEach((card, index) => {
+        card.addEventListener('click', () => {
+            // Simulate collaborative action
+            const actionMessages = [
+                '🤝 Initiating pair programming session...',
+                '📝 Starting code review process...',
+                '🚀 Beginning team leadership sync...'
+            ];
+            
+            showNotification(actionMessages[index]);
+        });
+    });
+    
+    // Add tool interaction
+    const toolItems = document.querySelectorAll('.tool-item');
+    toolItems.forEach(tool => {
+        tool.addEventListener('click', () => {
+            const toolName = tool.textContent.trim();
+            showNotification(`🛠️ Connecting to ${toolName}...`);
+            
+            // Add connecting animation
+            tool.style.background = 'var(--gradient-primary)';
+            tool.style.color = 'var(--bg-primary)';
+            
+            setTimeout(() => {
+                tool.style.background = '';
+                tool.style.color = '';
+            }, 2000);
+        });
+    });
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '100px';
+    notification.style.right = '2rem';
+    notification.style.background = 'var(--gradient-primary)';
+    notification.style.color = 'var(--bg-primary)';
+    notification.style.padding = '1rem 1.5rem';
+    notification.style.borderRadius = 'var(--border-radius)';
+    notification.style.boxShadow = '0 10px 30px rgba(0, 212, 255, 0.3)';
+    notification.style.zIndex = '10000';
+    notification.style.animation = 'slideInRight 0.3s ease-out';
+    notification.style.maxWidth = '300px';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Add notification animations
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
+    @keyframes slideInRight {
+        0% {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        100% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        0% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        100% {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(notificationStyle);
 
 // ================================
 // ERROR HANDLING

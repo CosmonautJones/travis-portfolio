@@ -21,6 +21,8 @@
                 <li class="nav-item"><a href="#skills" class="nav-link">Skills</a></li>
                 <li class="nav-item"><a href="#projects" class="nav-link">Projects</a></li>
                 <li class="nav-item"><a href="#experience" class="nav-link">Experience</a></li>
+                <li class="nav-item"><a href="#collaboration" class="nav-link">Collaboration</a></li>
+                <li class="nav-item"><a href="#playground" class="nav-link">Code Lab</a></li>
                 <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
             <div class="hamburger" id="hamburger">
@@ -250,6 +252,196 @@
             </div>
         </div>
     </section>
+
+    <!-- Team Collaboration Section -->
+    <section id="collaboration" class="collaboration">
+        <div class="container">
+            <h2 class="section-title">Team Collaboration</h2>
+            <div class="collaboration-intro">
+                <p>Great code is built together. Here's how I thrive in collaborative environments and contribute to team success.</p>
+            </div>
+            
+            <div class="collaboration-grid">
+                <div class="collab-card">
+                    <div class="collab-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Pair Programming</h3>
+                    <p>Love working side-by-side with teammates, sharing knowledge and solving complex problems together.</p>
+                    <div class="collab-stats">
+                        <span class="stat-pill">200+ Hours</span>
+                        <span class="stat-pill">15+ Partners</span>
+                    </div>
+                </div>
+                
+                <div class="collab-card">
+                    <div class="collab-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h3>Code Reviews</h3>
+                    <p>Passionate about clean code and constructive feedback. I help teams maintain high standards.</p>
+                    <div class="collab-stats">
+                        <span class="stat-pill">500+ Reviews</span>
+                        <span class="stat-pill">95% Approval</span>
+                    </div>
+                </div>
+                
+                <div class="collab-card">
+                    <div class="collab-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Team Leadership</h3>
+                    <p>Experience leading cross-functional teams and mentoring junior developers to reach their potential.</p>
+                    <div class="collab-stats">
+                        <span class="stat-pill">3 Teams Led</span>
+                        <span class="stat-pill">10+ Mentees</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="team-tools">
+                <h3>Collaboration Tools I Love</h3>
+                <div class="tools-grid">
+                    <div class="tool-item"><i class="fab fa-slack"></i> Slack</div>
+                    <div class="tool-item"><i class="fab fa-discord"></i> Discord</div>
+                    <div class="tool-item"><i class="fas fa-video"></i> Zoom</div>
+                    <div class="tool-item"><i class="fab fa-figma"></i> Figma</div>
+                    <div class="tool-item"><i class="fab fa-github"></i> GitHub</div>
+                    <div class="tool-item"><i class="fab fa-jira"></i> Jira</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Playground Section -->
+    <section id="playground" class="playground">
+        <div class="container">
+            <h2 class="section-title">Code Playground</h2>
+            <div class="playground-intro">
+                <p>Interactive examples of my coding style and problem-solving approach. Try clicking the run buttons!</p>
+            </div>
+            
+            <div class="code-examples">
+                <div class="code-example">
+                    <div class="code-header">
+                        <span class="code-lang">JavaScript</span>
+                        <button class="run-btn" data-example="fibonacci">
+                            <i class="fas fa-play"></i> Run
+                        </button>
+                    </div>
+                    <div class="code-editor">
+                        <pre><code class="language-javascript">// Fibonacci sequence generator
+function* fibonacci() {
+  let [a, b] = [0, 1];
+  while (true) {
+    yield a;
+    [a, b] = [b, a + b];
+  }
+}
+
+// Get first 10 numbers
+const fib = fibonacci();
+const result = [];
+for (let i = 0; i < 10; i++) {
+  result.push(fib.next().value);
+}
+console.log(result);</code></pre>
+                    </div>
+                    <div class="code-output" id="output-fibonacci">
+                        <div class="output-label">Output:</div>
+                        <div class="output-content">Click Run to see the magic! ✨</div>
+                    </div>
+                </div>
+                
+                <div class="code-example">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="run-btn" data-example="api">
+                            <i class="fas fa-play"></i> Run
+                        </button>
+                    </div>
+                    <div class="code-editor">
+                        <pre><code class="language-python"># Fast API endpoint example
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class User(BaseModel):
+    name: str
+    role: str
+    skills: list[str]
+
+@app.post("/users/")
+async def create_user(user: User):
+    return {
+        "message": f"Welcome {user.name}!",
+        "profile": user.dict()
+    }</code></pre>
+                    </div>
+                    <div class="code-output" id="output-api">
+                        <div class="output-label">API Response:</div>
+                        <div class="output-content">Click Run to see the response! 🚀</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="skills-radar">
+                <h3>Skills Assessment Dashboard</h3>
+                <div class="radar-container">
+                    <canvas id="skillsRadar" width="400" height="400"></canvas>
+                    <div class="radar-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: var(--primary)"></span>
+                            <span>Current Level</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: var(--secondary)"></span>
+                            <span>Target Level</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <div class="chat-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="chat-info">
+                <h4>AI Assistant</h4>
+                <span class="chat-status">Ask me about Travis!</span>
+            </div>
+            <button class="chat-toggle" id="chatToggle">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        Hi! I'm Travis's AI assistant. Ask me about his projects, skills, or experience! 🤖
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" placeholder="Ask about Travis's work..." maxlength="200">
+                <button id="chatSend">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <button class="chat-fab" id="chatFab">
+        <i class="fas fa-comments"></i>
+    </button>
 
     <!-- Contact Section -->
     <section id="contact" class="contact">
